@@ -71,7 +71,7 @@ router.post("/login", async (req, res) => {
     });
 
     if (!user) {
-      errors.email = "User not found";
+      errors.user = "User not found";
       return res.status(400).json({ errors });
     }
 
@@ -81,7 +81,7 @@ router.post("/login", async (req, res) => {
     );
     const originalPassword = hashedPassword.toString(Crypto.enc.Utf8);
     if (originalPassword !== req.body.password) {
-      errors.password = "Wrong Password";
+      errors.user = "Wrong Password";
       return res.status(400).json({ errors });
     }
 

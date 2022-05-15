@@ -45,20 +45,21 @@ router.delete("/:id", verifyTokenAndAdmin, async (req, res) => {
 });
 
 //Get product
-router.get("/find/:id", verifyTokenAndAdmin, async (req, res) => {
+router.get("/find/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (product) {
       res.status(200).json(product);
+    } else {
+      res.status(400).json("Product Not Found");
     }
-    res.status(400).json("Product Not Found");
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
 //Get all products
-router.get("/all", verifyTokenAndAdmin, async (req, res) => {
+router.get("/all", async (req, res) => {
   const qNew = req.query.new;
   const qCategory = req.query.category;
   try {
