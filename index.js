@@ -1,5 +1,4 @@
 const express = require("express");
-const routerCustom = require("express").Router();
 const mongoose = require("mongoose");
 const serverless = require("serverless-http");
 const path = require("path");
@@ -27,14 +26,17 @@ mongoose
     c(err);
   });
 
-routerCustom.get("/", (req, res) => {
-  res.status(200).json({ name: "suraj" });
-});
-
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname + "public")));
-app.use("/.netlify/index", routerCustom);
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/products", productRoute);
@@ -46,5 +48,3 @@ app.listen(process.env.PORT || 5001, () => {
   c("listening to " + process.env.PORT);
   c("E-Commerce NodeJS APIs");
 });
-
-module.exports = serverless(app);
