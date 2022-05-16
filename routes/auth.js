@@ -47,10 +47,10 @@ router.post("/register", async (req, res) => {
   } catch (err) {
     if (err.code === 11000) {
       err.code === 11000 && err.keyPattern.email === 1
-        ? (errors.email = "Email already exists")
+        ? (errors.user = "Email already exists")
         : "";
       err.code === 11000 && err.keyPattern.username === 1
-        ? (errors.email = "Username already exists")
+        ? (errors.user = "Username already exists")
         : "";
       return res.status(400).json({ errors });
     }
