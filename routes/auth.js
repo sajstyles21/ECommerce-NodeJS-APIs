@@ -26,6 +26,11 @@ const validateLoginInput = require("../validations/login");
 });
 var upload = multer({ storage: storage }).single("image");*/
 
+//Demo
+router.get("/router", (req, res) => {
+  res.send("hello world router");
+});
+
 //Register
 router.post("/register", async (req, res) => {
   const { errors, isValid } = validateRegisterInput(req.body);
