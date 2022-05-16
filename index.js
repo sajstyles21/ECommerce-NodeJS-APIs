@@ -35,7 +35,7 @@ app.use("/api/carts", cartRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api", stripeRoute);
 
-app.listen(process.env.PORT || 5001, () => {
+app.listen(process.env.PORT || 5000, () => {
   c("listening to " + process.env.PORT);
   c("E-Commerce NodeJS APIs");
 });
