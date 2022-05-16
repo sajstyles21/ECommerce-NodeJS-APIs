@@ -35,6 +35,10 @@ app.use("/api/carts", cartRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api", stripeRoute);
 
+app.get("/data", (req, res) => {
+  res.send("hello world");
+});
+
 app.listen(process.env.PORT || 5000, () => {
   c("listening to " + process.env.PORT);
   c("E-Commerce NodeJS APIs");
