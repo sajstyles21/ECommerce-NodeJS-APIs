@@ -27,13 +27,19 @@ mongoose
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname + "public")));
+
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/products", productRoute);
 app.use("/api/carts", cartRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api", stripeRoute);
+
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("/", function (req, res) {
+  res.sendFile(path.join(__dirname, "pulic", "index.html"));
+});
 
 const PORT = process.env.PORT || 5001;
 
