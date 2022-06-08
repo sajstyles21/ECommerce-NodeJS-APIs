@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const Crypto = require("crypto-js");
 const User = require("../models/User");
+const Order = require("../models/Order");
 const {
   verifyToken,
   verifyTokenAndAuthorization,
@@ -55,20 +56,23 @@ router.get("/all", verifyTokenAndAdmin, async (req, res) => {
   const query = req.query.new;
   try {
     const users = query
-      ? await User.find().sort({ _id: -1 }).limit(5)
-      : await User.find();
-    res.status(200).json(users);
+      ? await User.find({ isAdmin: { $in: false } })
+          .sort({ _id: -1 })
+          .limit(5)
+      : await User.find({ isAdmin: { $in: false } }).sort({ _id: -1 });
+    return res.status(200).json(users);
   } catch (err) {
-    res.status(500).json(err);
+    return res.status(500).json(err);
   }
 });
 
 //User Stats
 router.get("/stats", verifyTokenAndAdmin, async (req, res) => {
   const date = new Date();
-  const lastYear = new Date().setFullYear(date.getFullYear() - 1);
+  const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
   try {
     const data = await User.aggregate([
+      { $match: { createdAt: { $gte: lastYear } } },
       {
         $project: {
           month: { $month: "$createdAt" },
@@ -86,4 +90,18 @@ router.get("/stats", verifyTokenAndAdmin, async (req, res) => {
     res.status(500).json(err);
   }
 });
+
+//Latest orders
+router.get("/orders", verifyTokenAndAdmin, async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate("userId")
+      .sort({ _id: -1 })
+      .limit(5);
+    res.status(200).json(orders);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 module.exports = router;

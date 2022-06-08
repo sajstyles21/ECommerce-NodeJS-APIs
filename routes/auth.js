@@ -11,6 +11,11 @@ router.use(express.static(__dirname + "/public"));
 //Load User Validations
 const validateRegisterInput = require("../validations/register");
 const validateLoginInput = require("../validations/login");
+const {
+  getAccessToken,
+  getRefreshToken,
+  verifyTokenAndAuthorization,
+} = require("./verifyToken");
 
 //Multer
 /*var storage = multer.diskStorage({
@@ -29,6 +34,7 @@ var upload = multer({ storage: storage }).single("image");*/
 //Register
 router.post("/register", async (req, res) => {
   const { errors, isValid } = validateRegisterInput(req.body);
+  console.log(errors);
   if (!isValid) {
     return res.status(400).json({ errors });
   }
@@ -45,6 +51,7 @@ router.post("/register", async (req, res) => {
     const userAdded = await newUser.save();
     return res.status(200).json(userAdded);
   } catch (err) {
+    console.log(err);
     if (err.code === 11000) {
       err.code === 11000 && err.keyPattern.email === 1
         ? (errors.user = "Email already exists")
@@ -85,20 +92,55 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ errors });
     }
 
-    const accessToken = jwt.sign(
-      {
-        id: user._id,
-        isAdmin: user.isAdmin,
-      },
-      process.env.JWT_SEC,
-      { expiresIn: "3d" }
-    );
-
+    const accessToken = getAccessToken(user);
+    const refreshToken = getRefreshToken(user);
+    refreshTokens.push(refreshToken);
     const { password, ...others } = user._doc;
 
-    return res.status(200).json({ ...others, accessToken });
+    return res.status(200).json({ ...others, accessToken, refreshToken });
   } catch (err) {
     return res.status(500).json(err);
   }
 });
+
+let refreshTokens = [];
+//Refresh Token
+router.post("/refresh", (req, res) => {
+  try {
+    if (!req.body.token) {
+      return res.status(401).json("You are not authenticated");
+    }
+
+    if (!refreshTokens.includes(req.body.token)) {
+      res.status(403).json("Refresh token is invalid");
+    }
+
+    jwt.verify(req.body.token, process.env.JWT_SEC, (err, user) => {
+      if (err) {
+        res.status(403).json("Refresh token is wrong");
+      } else {
+        refreshTokens = refreshTokens.filter(
+          (token) => token !== req.body.token
+        );
+        const accessToken = getAccessToken(user);
+        const refreshToken = getRefreshToken(user);
+        refreshTokens.push(refreshToken);
+        return res.status(200).json({ accessToken, refreshToken });
+      }
+    });
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+//Logout
+router.post("/logout", verifyTokenAndAuthorization, (req, res) => {
+  try {
+    refreshTokens.filter((token) => token !== req.body.token);
+    res.status(200).json("Logout Successfully");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 module.exports = router;

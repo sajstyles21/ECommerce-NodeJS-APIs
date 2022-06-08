@@ -6,10 +6,10 @@ const verifyToken = (req, res, next) => {
     const token = authHeader.split(" ")[1];
     jwt.verify(token, process.env.JWT_SEC, (err, user) => {
       if (err) {
-        res.send(403).json("Wrong Token");
+        return res.send(403).json("Wrong Token");
       } else {
         req.user = user;
-        next();
+        return next();
       }
     });
   } else {
@@ -37,8 +37,24 @@ const verifyTokenAndAdmin = (req, res, next) => {
   });
 };
 
+const getAccessToken = (user) => {
+  return jwt.sign(
+    { id: user._id, isAdmin: user.isAdmin },
+    process.env.JWT_SEC,
+    {
+      expiresIn: "1h",
+    }
+  );
+};
+
+const getRefreshToken = (user) => {
+  return jwt.sign({ id: user._id, isAdmin: user.isAdmin }, process.env.JWT_SEC);
+};
+
 module.exports = {
   verifyToken,
   verifyTokenAndAuthorization,
   verifyTokenAndAdmin,
+  getAccessToken,
+  getRefreshToken,
 };
