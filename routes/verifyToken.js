@@ -42,7 +42,7 @@ const getAccessToken = (user) => {
     { id: user._id, isAdmin: user.isAdmin },
     process.env.JWT_SEC,
     {
-      expiresIn: "1h",
+      expiresIn: "10s",
     }
   );
 };
